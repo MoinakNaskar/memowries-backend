@@ -116,7 +116,7 @@ const loginUser = asyncHandler(async (req, res) =>{
         const user = await User.findOne({email})
         console.log(user)
         if(!user){
-            return res.status(400).json({msg: "no user with this email-id please create an account "})
+            throw new ApiError(400, "no user with this email-id please create an account ")
         }
         const isPasswordCorrect =  await user.isPasswordCorrect(password);
         if(!isPasswordCorrect){
