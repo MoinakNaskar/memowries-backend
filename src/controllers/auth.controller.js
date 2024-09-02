@@ -102,6 +102,13 @@ console.log(req.body)
 
 
 const loginUser = asyncHandler(async (req, res) =>{
+    // req body -> data
+    // username or email
+    //find the user
+    //password check
+    //access and referesh token
+    //send cookie
+
     const {email , password,latitude,longitude} = req.body;
         if(!email){
             return res.status(400).json({"msg": "please enter email Id"})
@@ -117,7 +124,7 @@ const loginUser = asyncHandler(async (req, res) =>{
         }
         const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id,res);
         console.log(accessToken,refreshToken)
-        const loginUser = await User.findByIdAndUpdate(user._id,{
+        const loggedInUser = await User.findByIdAndUpdate(user._id,{
             $set:{
                 location:{
                     type:'Point',
@@ -130,6 +137,40 @@ const loginUser = asyncHandler(async (req, res) =>{
         const options = {
             httpOnly : true ,
             secure : true
+    }
+
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new ApiResponse(
+            200, 
+            {
+                user: loggedInUser, accessToken, refreshToken
+            },
+            "User logged In Successfully"
+        )
+    )
+
+})
+
+const logoutUser = asyncHandler(async(req, res) => {
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $unset: {
+                refreshToken: 1 // this removes the field from document
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: true
     }
 
     return res
