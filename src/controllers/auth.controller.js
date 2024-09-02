@@ -102,89 +102,34 @@ console.log(req.body)
 
 
 const loginUser = asyncHandler(async (req, res) =>{
-    // req body -> data
-    // username or email
-    //find the user
-    //password check
-    //access and referesh token
-    //send cookie
-
-    const {email, username, password ,lat ,lng} = req.body
-    console.log(email);
-
-    if (!username && !email) {
-        throw new ApiError(400, "username or email is required")
-    }
-    
-    // Here is an alternative of above code based on logic discussed in video:
-    // if (!(username || email)) {
-    //     throw new ApiError(400, "username or email is required")
-        
-    // }
-
-    const user = await User.findOne({
-        $or: [{username}, {email}]
-    })
-
-    if (!user) {
-        throw new ApiError(404, "User does not exist")
-    }
-
-   const isPasswordValid = await user.isPasswordCorrect(password)
-
-   if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid user credentials")
-    }
-
-   const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id)
-
-    const loggedInUser = await User.findByIdAndUpdate(user._id,
-        {$set:{
-            location:{
-                type:"Point",
-                coordinates:[parseFloat(lng),parseFloat(lat)]
-              },
-              
-        }},{new:true}
-     ).select("-password -refreshToken")
-
-    const options = {
-        httpOnly: true,
-        secure: true
-    }
-
-    return res
-    .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
-    .json(
-        new ApiResponse(
-            200, 
-            {
-                user: loggedInUser, accessToken, refreshToken
-            },
-            "User logged In Successfully"
-        )
-    )
-
-})
-
-const logoutUser = asyncHandler(async(req, res) => {
-    await User.findByIdAndUpdate(
-        req.user._id,
-        {
-            $unset: {
-                refreshToken: 1 // this removes the field from document
-            }
-        },
-        {
-            new: true
+    const {email , password,latitude,longitude} = req.body;
+        if(!email){
+            return res.status(400).json({"msg": "please enter email Id"})
         }
-    )
-
-    const options = {
-        httpOnly: true,
-        secure: true
+        const user = await User.findOne({email})
+        console.log(user)
+        if(!user){
+            return res.status(400).json({msg: "no user with this email-id please create an account "})
+        }
+        const isPasswordCorrect =  await user.isPasswordCorrect(password);
+        if(!isPasswordCorrect){
+            return res.status(400).json({msg: "Wrong User Cradential"})
+        }
+        const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id,res);
+        console.log(accessToken,refreshToken)
+        const loginUser = await User.findByIdAndUpdate(user._id,{
+            $set:{
+                location:{
+                    type:'Point',
+                        coordinates:[parseFloat(longitude),parseFloat(latitude)]
+                }
+            }},{
+                new:true
+            }
+        ).select(" -refreshToken")
+        const options = {
+            httpOnly : true ,
+            secure : true
     }
 
     return res

@@ -64,7 +64,7 @@ const  createCommentReply = asyncHandler(
         }
         parentComment.replies.push(reply)
         await parentComment.save()
-        res.status(201).json(new ApiResponse(201,reply,"Reply created successfully!"))
+        res.status(201).json(new ApiResponse(201,parentComment.reply,"Reply created successfully!"))
 
     }
 )

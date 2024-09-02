@@ -174,7 +174,7 @@ export const likePost = asyncHandler(
  )
  export const getAllPosts = asyncHandler(
     async(req,res)=>{
-        const {userId}=req.params
+        const userId=req.user._id
         const user=await User.findById(userId)
         if(!user){
             throw new ApiError(404,"User not found!")
@@ -183,7 +183,6 @@ export const likePost = asyncHandler(
         const allPosts=await Post.find({user:{$nin:blockedUserIds}}).populate("user","username fullName avatar")
         res.status(200).json(
             new ApiResponse(200, allPosts," posts fetched successfully"))
-
 
     }
  )
