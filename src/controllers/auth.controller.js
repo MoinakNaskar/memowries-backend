@@ -109,7 +109,7 @@ const loginUser = asyncHandler(async (req, res) =>{
     //access and referesh token 
     //send cookie
 
-    const {email , password,latitude,longitude} = req.body;
+    const {email , password,lat,lng} = req.body;
         if(!email){
             throw new ApiError(400, "please enter email Id")
         }
@@ -128,7 +128,7 @@ const loginUser = asyncHandler(async (req, res) =>{
             $set:{
                 location:{
                     type:'Point',
-                        coordinates:[parseFloat(longitude),parseFloat(latitude)]
+                        coordinates:[parseFloat(lng),parseFloat(lat)]
                 }
             }},{
                 new:true
