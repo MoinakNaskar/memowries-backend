@@ -106,12 +106,12 @@ const loginUser = asyncHandler(async (req, res) =>{
     // username or email
     //find the user
     //password check
-    //access and referesh token
+    //access and referesh token 
     //send cookie
 
     const {email , password,latitude,longitude} = req.body;
         if(!email){
-            return res.status(400).json({"msg": "please enter email Id"})
+            throw new ApiError(400, "please enter email Id")
         }
         const user = await User.findOne({email})
         console.log(user)
@@ -122,7 +122,7 @@ const loginUser = asyncHandler(async (req, res) =>{
         if(!isPasswordCorrect){
             return res.status(400).json({msg: "Wrong User Cradential"})
         }
-        const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id,res);
+        const {accessToken, refreshToken} = await generateAccessAndRefereshTokens(user._id,res);
         console.log(accessToken,refreshToken)
         const loggedInUser = await User.findByIdAndUpdate(user._id,{
             $set:{
